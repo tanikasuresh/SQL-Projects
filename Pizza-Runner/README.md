@@ -1,5 +1,5 @@
-# Danny's Diner
-### Danny's Diner is Case Study #1 from Danny Ma's 8-Week SQL Challenge
+# Pizza Runner
+### Pizza Runner is Case Study #2 from Danny Ma's 8-Week SQL Challenge
 Link: https://8weeksqlchallenge.com/case-study-2/
 
 #### "Danny was scrolling through his Instagram feed when something really caught his eye - '80s Retro Styling and Pizza Is The Future!'"

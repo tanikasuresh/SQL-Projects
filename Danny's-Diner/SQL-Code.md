@@ -330,15 +330,48 @@ ORDER BY s.customer_id, s.order_date, m.product_name
 | C           | 2021-01-07 | ramen        | 12    | N      |
   
 ---
-  
+### Rank All The Things: Rank the previous table by ascending order_date only for products that were purchased when the customer was a member at time of purchase
 
+```sql
+WITH joined_cte as
+(
+  SELECT s.customer_id, s.order_date, m.product_name, m.price, CASE
+	WHEN s.customer_id not in (select mem.customer_id from dannys_diner.members mem)
+	OR s.order_date < mem.join_date THEN 'N'
+	ELSE 'Y'
+END AS member
+FROM dannys_diner.sales s
+LEFT JOIN dannys_diner.members mem ON mem.customer_id = s.customer_id
+JOIN dannys_diner.menu m ON s.product_id = m.product_id
+ORDER BY s.customer_id, s.order_date, m.product_name
+  )
+  SELECT joined_cte.*, case
+  when member = 'N' then null
+  else rank() over(partition by customer_id, member order by order_date) end as ranking FROM joined_cte
+```
+- we use the previous query to provide the table of members, their purchases/price,
+- and whether they were a member or not at the time of purchase
+- adding on to this, we use a case to rank only the customers that were a member,
+- with a partition on the customer_id and the member to ensure that the rank starts
+- when the member is 'Y'
 
+| customer_id | order_date | product_name | price | member | ranking |
+| ----------- | ---------- | ------------ | ----- | ------ | ------- |
+| A           | 2021-01-01 | curry        | 15    | N      |         |
+| A           | 2021-01-01 | sushi        | 10    | N      |         |
+| A           | 2021-01-07 | curry        | 15    | Y      | 1       |
+| A           | 2021-01-10 | ramen        | 12    | Y      | 2       |
+| A           | 2021-01-11 | ramen        | 12    | Y      | 3       |
+| A           | 2021-01-11 | ramen        | 12    | Y      | 3       |
+| B           | 2021-01-01 | curry        | 15    | N      |         |
+| B           | 2021-01-02 | curry        | 15    | N      |         |
+| B           | 2021-01-04 | sushi        | 10    | N      |         |
+| B           | 2021-01-11 | sushi        | 10    | Y      | 1       |
+| B           | 2021-01-16 | ramen        | 12    | Y      | 2       |
+| B           | 2021-02-01 | ramen        | 12    | Y      | 3       |
+| C           | 2021-01-01 | ramen        | 12    | N      |         |
+| C           | 2021-01-01 | ramen        | 12    | N      |         |
+| C           | 2021-01-07 | ramen        | 12    | N      |         |
 
-
-
-
-
-
-
-
-
+- Here, we see that only the customer purchases that were members at the time of purchase are ranked, the rest are null
+---

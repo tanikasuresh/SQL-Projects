@@ -13,7 +13,7 @@ Link: https://8weeksqlchallenge.com/case-study-1/
 ---
 ### Table #1: sales
 ```sql
-select * from dannys_diner.sales;
+SELECT * FROM dannys_diner.sales;
 ```
 | customer_id | order_date | product_id |
 | ----------- | ---------- | ---------- |
@@ -36,7 +36,7 @@ select * from dannys_diner.sales;
 ---
 ### Table #2: members
 ```sql
-select * from dannys_diner.members;
+SELECT * FROM dannys_diner.members;
 ```
 
 | customer_id | join_date  |
@@ -48,7 +48,7 @@ select * from dannys_diner.members;
 
 ### Table #3: menu
 ```sql
-select * from dannys_diner.menu;
+SELECT * FROM dannys_diner.menu;
 ```
 
 | product_id | product_name | price |

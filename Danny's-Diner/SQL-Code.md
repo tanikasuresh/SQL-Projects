@@ -51,8 +51,7 @@ ORDER BY s.customer_id, s.order_date, s.product_id
  WHERE ranking = 1
 ```
 - we can use a cte to display all the orders and their row_number
-- then select for the order whose row numbers are one
-- giving us the first item that was ordered
+- then select for the order whose row numbers are one, giving us the first item that was ordered
 
 | customer_id | product_name |
 | ----------- | ------------ |
@@ -94,7 +93,7 @@ ORDER BY s.customer_id, ranking
   WHERE ranking = 1
 ```
 - popularity can be found by ranking the number of times an item was purchased by each customer
-- then selecting for the rows that have a ranking as one
+- then, selecting for the rows that have a ranking as one
 
 | customer_id | product_name | num_of_orders |
 | ----------- | ------------ | ------------- |
@@ -125,7 +124,7 @@ SELECT customer_id, product_name FROM dates_cte
 WHERE ranking = 1
 ```
 - we can use a cte to find all of the rows where the order date is greater than the join date
-- then select the rows for which the ranking is one
+- then, select the rows for which the ranking is one
 
 | customer_id | product_name |
 | ----------- | ------------ |
@@ -152,9 +151,8 @@ ORDER BY s.customer_id
 SELECT customer_id, product_name FROM dates_cte
 WHERE ranking = 1
 ```
-- this is similar to the previous query, except we select the rows where the
-- order date is less than the join date
-- then we rank based on the order date so the closest date to the join date is highest
+- this is similar to the previous query, except we select the rows where the order date is less than the join date
+- then, we rank based on the order date so the closest date to the join date is highest
 - we then select the rows where the rank is one
 
 | customer_id | product_name |
@@ -174,8 +172,7 @@ GROUP BY mem.customer_id
 ORDER BY mem.customer_id
 ```
 - first we join the sales, menu, and member tables to get the customer, what item they purchased, and the price
-- next we group by the customer_id so we can find the total count of the items bought
-- and the sum of all the prices
+- next we group by the customer_id so we can find the total count of the items bought and the sum of all the prices
 
 
 | member | total_items | total_amount |
@@ -202,10 +199,8 @@ WITH point_system_cte AS
  GROUP BY s.customer_id
  ORDER BY s.customer_id
 ```
-- first we need a cte that detail the amount of points each product gets using a case
-- to account for all the products
-- next we will join the points_system_cte with the sales to match the product
-- the customer order with the points it receives
+- First we need a cte that detail the amount of points each product gets using a case to account for all the products
+- next, we will join the points_system_cte with the sales to match the product the customer order with the points it receives
 - lastly, by grouping based on the customer, we can find the sum of all the points
 
 | customer_id | sum |
@@ -230,86 +225,8 @@ LEFT JOIN dannys_diner.members mem ON mem.customer_id = s.customer_id
 JOIN dannys_diner.menu m ON s.product_id = m.product_id
 ORDER BY s.customer_id, s.order_date, m.product_name
 ```
-- the case in the select clause functions to classify whether the customer
-- was a member or not at the time of the purchase
-- in other words, if the customer has never been a member or the made the purchase
-- prior to their joindate
-
-**Schema (PostgreSQL v13)**
-
-    CREATE SCHEMA dannys_diner;
-    SET search_path = dannys_diner;
-    
-    CREATE TABLE sales (
-      "customer_id" VARCHAR(1),
-      "order_date" DATE,
-      "product_id" INTEGER
-    );
-    
-    INSERT INTO sales
-      ("customer_id", "order_date", "product_id")
-    VALUES
-      ('A', '2021-01-01', '1'),
-      ('A', '2021-01-01', '2'),
-      ('A', '2021-01-07', '2'),
-      ('A', '2021-01-10', '3'),
-      ('A', '2021-01-11', '3'),
-      ('A', '2021-01-11', '3'),
-      ('B', '2021-01-01', '2'),
-      ('B', '2021-01-02', '2'),
-      ('B', '2021-01-04', '1'),
-      ('B', '2021-01-11', '1'),
-      ('B', '2021-01-16', '3'),
-      ('B', '2021-02-01', '3'),
-      ('C', '2021-01-01', '3'),
-      ('C', '2021-01-01', '3'),
-      ('C', '2021-01-07', '3');
-     
-    
-    CREATE TABLE menu (
-      "product_id" INTEGER,
-      "product_name" VARCHAR(5),
-      "price" INTEGER
-    );
-    
-    INSERT INTO menu
-      ("product_id", "product_name", "price")
-    VALUES
-      ('1', 'sushi', '10'),
-      ('2', 'curry', '15'),
-      ('3', 'ramen', '12');
-      
-    
-    CREATE TABLE members (
-      "customer_id" VARCHAR(1),
-      "join_date" DATE
-    );
-    
-    INSERT INTO members
-      ("customer_id", "join_date")
-    VALUES
-      ('A', '2021-01-07'),
-      ('B', '2021-01-09');
-
----
-
-**Query #1**
-
-    SELECT s.customer_id, s.order_date, m.product_name, m.price, CASE
-    	WHEN s.customer_id not in (select mem.customer_id from dannys_diner.members mem)
-    	OR s.order_date < mem.join_date THEN 'N'
-    	ELSE 'Y'
-    END AS member
-    FROM dannys_diner.sales s
-    LEFT JOIN dannys_diner.members mem ON mem.customer_id = s.customer_id
-    JOIN dannys_diner.menu m ON s.product_id = m.product_id
-    ORDER BY s.customer_id, s.order_date, m.product_name;
-    
-- the case in the select clause functions to classify whether the customer
-- was a member or not at the time of the purchase
-- in other words, if the customer has never been a member or the made the purchase
-- prior to their joindate
-  
+- the case in the select clause functions to classify whether the customer was a member or not at the time of the purchase
+- in other words, if the customer has never been a member or the made the purchase prior to their joindate
 
 | customer_id | order_date | product_name | price | member |
 | ----------- | -----------| ------------ | ----- | ------ |
@@ -349,11 +266,8 @@ ORDER BY s.customer_id, s.order_date, m.product_name
   when member = 'N' then null
   else rank() over(partition by customer_id, member order by order_date) end as ranking FROM joined_cte
 ```
-- we use the previous query to provide the table of members, their purchases/price,
-- and whether they were a member or not at the time of purchase
-- adding on to this, we use a case to rank only the customers that were a member,
-- with a partition on the customer_id and the member to ensure that the rank starts
-- when the member is 'Y'
+- we use the previous query to provide the table of members, their purchases/price, and whether they were a member or not at the time of purchase
+- adding on to this, we use a case to rank only the customers that were a member, with a partition on the customer_id and the member to ensure that the rank starts when the member column is 'Y'
 
 | customer_id | order_date | product_name | price | member | ranking |
 | ----------- | ---------- | ------------ | ----- | ------ | ------- |
